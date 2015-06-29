@@ -19,8 +19,9 @@ using Android.Support.V4.App;
 
 namespace ZXing.Mobile
 {
-	[Activity (Label = "Scanner", ConfigurationChanges=ConfigChanges.Orientation|ConfigChanges.KeyboardHidden|ConfigChanges.ScreenLayout)]
-	public class ZxingActivity : FragmentActivity 
+	[Activity(Label = "Scanner",
+	           ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenLayout)]
+	public class ZxingActivity : FragmentActivity
 	{
 		public static event Action<ZXing.Result> OnScanCompleted;
 		public static event Action OnCanceled;
@@ -29,53 +30,54 @@ namespace ZXing.Mobile
 		public static event Action<bool> OnTorchRequested;
 		public static event Action OnAutoFocusRequested;
 
-		public static void RequestCancel ()
+		public static void RequestCancel()
 		{
 			var evt = OnCancelRequested;
-			if (evt != null)
-				evt();
+			if(evt != null) evt();
 		}
 
-		public static void RequestTorch (bool torchOn)
+		public static void RequestTorch(bool torchOn)
 		{
 			var evt = OnTorchRequested;
-			if (evt != null)
-				evt(torchOn);
+			if(evt != null) evt(torchOn);
 		}
 
-		public static void RequestAutoFocus ()
+		public static void RequestAutoFocus()
 		{
 			var evt = OnAutoFocusRequested;
-			if (evt != null)
-				evt();
+			if(evt != null) evt();
 		}
 
-		public static View CustomOverlayView { get;set; }
+		public static View CustomOverlayView { get; set; }
+
 		public static bool UseCustomView { get; set; }
-		public static MobileBarcodeScanningOptions ScanningOptions { get;set; }
-		public static string TopText { get;set; }
-		public static string BottomText { get;set; }
+
+		public static MobileBarcodeScanningOptions ScanningOptions { get; set; }
+
+		public static string TopText { get; set; }
+
+		public static string BottomText { get; set; }
+
+		public static ScreenOrientation Orientation { get; set; }
 
 		ZXingScannerFragment scannerFragment;
 
-		protected override void OnCreate (Bundle bundle)
+		protected override void OnCreate(Bundle bundle)
 		{
-			base.OnCreate (bundle);
+			base.OnCreate(bundle);
 
-			this.RequestWindowFeature (WindowFeatures.NoTitle);
+			this.RequestWindowFeature(WindowFeatures.NoTitle);
 
-			this.Window.AddFlags (WindowManagerFlags.Fullscreen); //to show
-			this.Window.AddFlags (WindowManagerFlags.KeepScreenOn); //Don't go to sleep while scanning
+			this.Window.AddFlags(WindowManagerFlags.Fullscreen); //to show
+			this.Window.AddFlags(WindowManagerFlags.KeepScreenOn); //Don't go to sleep while scanning
 
-			if (ScanningOptions.AutoRotate.HasValue && !ScanningOptions.AutoRotate.Value)
-				RequestedOrientation = ScreenOrientation.Nosensor;
+			if(ScanningOptions.AutoRotate.HasValue && !ScanningOptions.AutoRotate.Value) RequestedOrientation = ScreenOrientation.Nosensor;
 
 			SetContentView(Resource.Layout.zxingscanneractivitylayout);
 
-			scannerFragment = new ZXingScannerFragment(result => {
+			scannerFragment = new ZXingScannerFragment(result =>{
 				var evt = OnScanCompleted;
-				if (evt != null)
-					OnScanCompleted(result);
+				if(evt != null) OnScanCompleted(result);
 
 				this.Finish();
 
@@ -95,6 +97,12 @@ namespace ZXing.Mobile
 
 		}
 
+		protected override void OnResume()
+		{
+			base.OnResume();
+			RequestedOrientation = Orientation;
+		}
+
 		void HandleTorchRequested(bool on)
 		{
 			this.SetTorch(on);
@@ -110,18 +118,18 @@ namespace ZXing.Mobile
 			this.CancelScan();
 		}
 
-		protected override void OnDestroy ()
+		protected override void OnDestroy()
 		{
 			OnCancelRequested -= HandleCancelScan;
 			OnAutoFocusRequested -= HandleAutoFocus;
 			OnTorchRequested -= HandleTorchRequested;
 
-			base.OnDestroy ();
+			base.OnDestroy();
 		}
 
-		public override void OnConfigurationChanged (Android.Content.Res.Configuration newConfig)
+		public override void OnConfigurationChanged(Android.Content.Res.Configuration newConfig)
 		{
-			base.OnConfigurationChanged (newConfig);
+			base.OnConfigurationChanged(newConfig);
 
 			Android.Util.Log.Debug("ZXING", "Configuration Changed");
 		}
@@ -136,26 +144,25 @@ namespace ZXing.Mobile
 			scannerFragment.AutoFocus();
 		}
 
-		public void CancelScan ()
+		public void CancelScan()
 		{
-			Finish ();
+			Finish();
 			var evt = OnCanceled;
-			if (evt !=null)
-				evt();
+			if(evt != null) evt();
 		}
 
-		public override bool OnKeyDown (Keycode keyCode, KeyEvent e)
+		public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
 		{
-			switch (keyCode)
+			switch(keyCode)
 			{
-			case Keycode.Back:
-				CancelScan();
-				break;
-			case Keycode.Focus:
-				return true;
+				case Keycode.Back:
+					CancelScan();
+					break;
+				case Keycode.Focus:
+					return true;
 			}
 
-			return base.OnKeyDown (keyCode, e);
+			return base.OnKeyDown(keyCode, e);
 		}
 	}
 
